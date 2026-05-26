@@ -9,17 +9,17 @@
 - [x] .gitignore includes venv/, db/, .env
 
 ## Step 0 — Free-Tier Swap Decisions
-- [ ] OpenAI swap decision saved as memory (Groq + HF? Ollama? other?)
-- [ ] Railway swap decision saved as memory (Render? Fly? HF Spaces?)
+- [x] OpenAI swap → Groq (`llama-3.3-70b-versatile`) + HF local embeddings (`all-MiniLM-L6-v2`)
+- [x] Railway swap → Render free web service (Procfile-compatible, GitHub-connected)
 - [ ] Resend FROM domain decided (sandbox vs verified domain)
 
 ## Knowledge Base (Step 1)
-- [ ] faq.md created
-- [ ] refund_policy.md created
-- [ ] shipping_policy.md created
-- [ ] product_guide.md created
-- [ ] pricing.md created
-- [ ] All 5 markdown documents have realistic content
+- [x] faq.md created
+- [x] refund_policy.md created
+- [x] shipping_policy.md created
+- [x] product_guide.md created
+- [x] pricing.md created
+- [x] All 5 markdown documents have realistic content (verbatim from source guide)
 
 ## Models (Step 2)
 - [ ] app/models.py — all Pydantic classes defined
@@ -71,7 +71,7 @@
 
 ## Deployment (Step 9)
 - [ ] Procfile created (or platform-equivalent)
-- [ ] Deployed to chosen platform (Render/Fly/HF) — Railway not free anymore
+- [ ] Deployed to Render free web service
 - [ ] Env vars set in dashboard
 - [ ] Live URL tested with same curl commands
 

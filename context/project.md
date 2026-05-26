@@ -25,14 +25,17 @@ On startup, FastAPI's lifespan hook checks the vector store. If empty, it ingest
 
 ## Component Configs
 
-### Embeddings
-- Model: `text-embedding-3-small`
-- Provider: OpenAI (free-tier swap pending — see Step 0 decision)
+### Embeddings (swapped from OpenAI → HuggingFace local)
+- Model: `sentence-transformers/all-MiniLM-L6-v2` (env: `HF_EMBEDDING_MODEL`)
+- Provider: local, via `langchain-huggingface` + `sentence-transformers`
+- Dimensions: 384
+- No API key, no rate limit, weights cached to disk on first run (~80 MB)
 
-### LLM
-- Model: `gpt-4o`
+### LLM (swapped from OpenAI → Groq)
+- Model: `llama-3.3-70b-versatile` (env: `GROQ_MODEL`)
 - temperature: 0
-- Provider: OpenAI (same swap as above)
+- Provider: Groq Cloud (free tier, native function-calling)
+- Env: `GROQ_API_KEY`
 
 ### Vector Store (ChromaDB)
 - Collection: `support_knowledge_base`
@@ -117,6 +120,6 @@ Lives in `./knowledge_base/*.md`. Fake company: **NovaTech Solutions** (B2B SaaS
 See `context/credentials.md` for the template the user must fill in.
 
 ## Deferred Decisions (must resolve before that section)
-- **Step 0a** — OpenAI replacement (billing required). Options: Groq + HF embeddings, full Ollama local. → save as project-decision memory.
-- **Step 9a** — Railway replacement (paid). Options: Render free web service, Fly.io, HF Spaces. → save as project-decision memory.
+- ~~Step 0a — OpenAI replacement~~ **RESOLVED** → Groq (LLM) + HuggingFace local embeddings. See [memory/decision_openai_swap_resolved.md].
+- ~~Step 0b — Railway replacement~~ **RESOLVED** → Render free web service. See [memory/decision_railway_swap_resolved.md].
 - **Resend FROM domain** — `support@yourdomain.com` placeholder; need a verified Resend domain or use Resend's sandbox `onboarding@resend.dev`.

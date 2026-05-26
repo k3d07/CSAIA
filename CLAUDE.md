@@ -18,8 +18,8 @@ A FastAPI service exposing 4 endpoints (`/chat`, `/escalate`, `/ingest`, `/healt
 **The portfolio-critical feature:** the agent escalates with full context when it doesn't know — that's the differentiator vs. a toy chatbot.
 
 ## Key Decisions From Source File
-- **Embedding model:** `text-embedding-3-small` (cheaper, better than ada-002)
-- **LLM:** `gpt-4o`, temperature=0
+- **Embedding model:** ~~`text-embedding-3-small`~~ → **`sentence-transformers/all-MiniLM-L6-v2`** (free-tier swap, local, 384-dim)
+- **LLM:** ~~`gpt-4o`~~ → **`llama-3.3-70b-versatile` via Groq**, temperature=0 (free-tier swap)
 - **Chunking:** RecursiveCharacterTextSplitter, chunk_size=1000, overlap=200
 - **Retrieval:** top-k=4, relevance threshold 0.4 (below → escalate)
 - **Agent:** `create_tool_calling_agent` + AgentExecutor, max_iterations=6, handle_parsing_errors=True
@@ -32,9 +32,9 @@ A FastAPI service exposing 4 endpoints (`/chat`, `/escalate`, `/ingest`, `/healt
 ## Free-Tier Constraints (User Rule)
 No credit card. If a service requires billing, swap to a free alternative and document the swap as a project-decision memory.
 
-**Known billing blockers in the source file (decisions deferred until that section):**
-- **OpenAI** — requires billing. Candidate swaps: Groq (free LLM) + HuggingFace local embeddings, or full Ollama local.
-- **Railway** — removed free tier. Candidate swaps: Render free web service, Fly.io, HuggingFace Spaces.
+**Known billing blockers in the source file:**
+- ~~**OpenAI**~~ → **RESOLVED:** Groq (LLM) + HuggingFace local embeddings. See memory `decision_openai_swap_resolved`.
+- ~~**Railway**~~ → **RESOLVED:** Render free web service. See memory `decision_railway_swap_resolved`.
 - **HubSpot, Slack, Resend, Airtable** — usable on free tiers.
 
 ## Working Style Rules
@@ -48,14 +48,16 @@ No credit card. If a service requires billing, swap to a free alternative and do
 
 ## Status Block
 
-**Current section:** Step 1 — Knowledge Base Documents (not started)
-**Last completed:** Scaffolding
+**Current section:** Step 2 — Pydantic Models (not started)
+**Last completed:** Step 1 — Knowledge base created (5 NovaTech docs, verbatim from source guide)
 **Blocked on:** None
-**Next action:** User runs `next` → we create the 5 knowledge_base/*.md files
+**Next action:** User runs `next` → write `app/models.py`
 
 ### Section Progress
 - [x] Scaffolding (folders, configs, docs split, memory)
-- [ ] Step 0 — Resolve free-tier swaps (OpenAI, Railway)
+- [x] Step 0a — OpenAI swap resolved (Groq llama-3.3-70b-versatile + HF MiniLM-L6-v2)
+- [x] Step 0b — Railway swap resolved (Render free web service)
+- [x] Step 1 — Knowledge base documents
 - [ ] Step 1 — Create knowledge base documents
 - [ ] Step 2 — Pydantic models
 - [ ] Step 3 — RAG pipeline + isolation test
