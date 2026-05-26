@@ -22,7 +22,7 @@
 - [x] All 5 markdown documents have realistic content (verbatim from source guide)
 
 ## Models (Step 2)
-- [ ] app/models.py — all Pydantic classes defined
+- [x] app/models.py — all Pydantic classes defined
 
 ## RAG Pipeline (Step 3)
 - [ ] app/rag.py — embeddings + vector store + ingest + search
@@ -32,26 +32,26 @@
 - [ ] Chunks count between 40–70
 
 ## Tools (Step 4)
-- [ ] knowledge_base.py — search_faq with precise docstring
-- [ ] orders.py — get_order_status with Airtable + graceful fallback
-- [ ] hubspot.py — create_support_ticket with graceful fallback
-- [ ] email.py — send_reply_email with graceful fallback
-- [ ] escalation.py — escalate_to_human Slack block kit
+- [x] knowledge_base.py — search_faq with precise docstring
+- [x] orders.py — get_order_status with Airtable + graceful fallback
+- [x] hubspot.py — create_support_ticket with graceful fallback
+- [x] email.py — send_reply_email with graceful fallback (FROM defaults to Resend sandbox)
+- [x] escalation.py — escalate_to_human Slack block kit
 
 ## Agent (Step 5)
-- [ ] app/agent.py — TOOLS registry, LLM, SYSTEM_PROMPT
-- [ ] create_tool_calling_agent + AgentExecutor wired
-- [ ] convert_history maps message formats correctly
-- [ ] run_agent extracts sources from intermediate_steps
-- [ ] escalated flag set when escalate_to_human fires
+- [x] app/agent.py — TOOLS registry, LLM (Groq), SYSTEM_PROMPT
+- [x] create_tool_calling_agent + AgentExecutor wired (max_iterations=6, return_intermediate_steps=True)
+- [x] convert_history maps message formats correctly
+- [x] run_agent extracts sources from intermediate_steps
+- [x] escalated flag set when escalate_to_human fires
 
 ## API (Step 6)
-- [ ] app/main.py — FastAPI app, CORS, lifespan
-- [ ] verify_api_key dependency works (401 on bad key)
-- [ ] /health returns document_count
-- [ ] /chat returns answer + sources + escalated + session_id
-- [ ] /ingest adds content and returns chunk count
-- [ ] Lifespan auto-ingests knowledge_base on first start
+- [x] app/main.py — FastAPI app, CORS, lifespan
+- [x] verify_api_key dependency works (401 on bad key) — to validate in Step 7
+- [x] /health returns document_count
+- [x] /chat returns answer + sources + escalated + session_id
+- [x] /ingest adds content and returns chunk count
+- [x] Lifespan auto-ingests knowledge_base on first start
 
 ## Run Locally (Step 7)
 - [ ] `uvicorn app.main:app --reload --port 8000` starts clean

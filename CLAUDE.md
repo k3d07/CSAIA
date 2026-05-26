@@ -48,16 +48,21 @@ No credit card. If a service requires billing, swap to a free alternative and do
 
 ## Status Block
 
-**Current section:** Step 2 — Pydantic Models (not started)
-**Last completed:** Step 1 — Knowledge base created (5 NovaTech docs, verbatim from source guide)
-**Blocked on:** None
-**Next action:** User runs `next` → write `app/models.py`
+**Current section:** Step 7 — Run Locally (not started)
+**Last completed:** Step 6 — FastAPI app (`app/main.py`) with 4 routes, auth, lifespan
+**Blocked on:** Need `.env` filled in (at minimum `GROQ_API_KEY` + `API_KEY`) before first run
+**Next action:** Create `.env` from `.env.example`, fill in keys, run `uvicorn app.main:app --reload --port 8000`
 
 ### Section Progress
 - [x] Scaffolding (folders, configs, docs split, memory)
 - [x] Step 0a — OpenAI swap resolved (Groq llama-3.3-70b-versatile + HF MiniLM-L6-v2)
 - [x] Step 0b — Railway swap resolved (Render free web service)
 - [x] Step 1 — Knowledge base documents
+- [x] Step 2 — Pydantic models
+- [x] Step 3 — RAG pipeline (with cosine distance fix for HF embeddings)
+- [x] Step 4 — Five tools
+- [x] Step 5 — LangChain agent (Groq, tool-calling, source extraction)
+- [x] Step 6 — FastAPI app (4 routes, auth, lifespan auto-ingest)
 - [ ] Step 1 — Create knowledge base documents
 - [ ] Step 2 — Pydantic models
 - [ ] Step 3 — RAG pipeline + isolation test
