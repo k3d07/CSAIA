@@ -1,0 +1,120 @@
+### Sample request payloads for the 8 core tests
+### Use with VS Code REST Client extension, or copy bodies into /docs Swagger UI
+
+@host = http://localhost:8000
+@apiKey = dev-key
+
+### Test 1 — Health
+GET {{host}}/health
+
+### Test 2a — Refund policy (happy path, should NOT escalate)
+POST {{host}}/chat
+Content-Type: application/json
+x-api-key: {{apiKey}}
+
+{
+  "message": "What is your refund policy?",
+  "user_email": "test@example.com"
+}
+
+### Test 2b — Pricing
+POST {{host}}/chat
+Content-Type: application/json
+x-api-key: {{apiKey}}
+
+{
+  "message": "How much does the Pro plan cost per month?",
+  "user_email": "test@example.com"
+}
+
+### Test 2c — Feature
+POST {{host}}/chat
+Content-Type: application/json
+x-api-key: {{apiKey}}
+
+{
+  "message": "Does the Starter plan support API access?",
+  "user_email": "test@example.com"
+}
+
+### Test 3 — Multi-turn (turn 1)
+POST {{host}}/chat
+Content-Type: application/json
+x-api-key: {{apiKey}}
+
+{
+  "message": "I want to cancel my subscription.",
+  "session_id": "test-session-001"
+}
+
+### Test 3 — Multi-turn (turn 2)
+POST {{host}}/chat
+Content-Type: application/json
+x-api-key: {{apiKey}}
+
+{
+  "message": "Will I get a refund for the remaining days?",
+  "conversation_history": [
+    {"role": "user", "content": "I want to cancel my subscription."},
+    {"role": "assistant", "content": "<paste the first response here>"}
+  ],
+  "session_id": "test-session-001"
+}
+
+### Test 4 — Order lookup
+POST {{host}}/chat
+Content-Type: application/json
+x-api-key: {{apiKey}}
+
+{
+  "message": "Can you check the status of my order ORD-2024-8821?",
+  "user_email": "test@example.com"
+}
+
+### Test 5 — Escalation (security/fraud — PORTFOLIO-CRITICAL)
+POST {{host}}/chat
+Content-Type: application/json
+x-api-key: {{apiKey}}
+
+{
+  "message": "I think someone has unauthorized access to my account and has been making purchases I didn't authorize.",
+  "user_email": "alarmed@example.com"
+}
+
+### Test 6 — Legal/out-of-scope
+POST {{host}}/chat
+Content-Type: application/json
+x-api-key: {{apiKey}}
+
+{
+  "message": "I want to sue your company for negligence. Who is your legal department?",
+  "user_email": "angry@example.com"
+}
+
+### Test 7 — Wrong API key (expect 401)
+POST {{host}}/chat
+Content-Type: application/json
+x-api-key: wrong-key
+
+{
+  "message": "hello"
+}
+
+### Test 8a — Ingest new doc
+POST {{host}}/ingest
+Content-Type: application/json
+x-api-key: {{apiKey}}
+
+{
+  "document_name": "holiday_hours.md",
+  "content": "NovaTech support is unavailable on December 25 and January 1. During these dates, the AI agent handles urgent questions but human agents will respond the next business day. Emergency security issues should be emailed to security@novatech.io."
+}
+
+### Test 8b — Query newly ingested doc
+POST {{host}}/chat
+Content-Type: application/json
+x-api-key: {{apiKey}}
+
+{
+  "message": "Are you available on Christmas Day?"
+}

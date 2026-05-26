@@ -1,0 +1,45 @@
+{
+  "_description": "Mock data to seed the Airtable Orders table (or to use as fallback responses). Field names match what app/tools/orders.py reads.",
+  "records": [
+    {
+      "fields": {
+        "OrderID": "ORD-2024-8821",
+        "Status": "Shipped",
+        "OrderDate": "2024-11-15",
+        "Product": "NovaTech Pro — Annual License",
+        "EstimatedDelivery": "Digital — delivered",
+        "TrackingNumber": "N/A (digital)"
+      }
+    },
+    {
+      "fields": {
+        "OrderID": "ORD-2025-0117",
+        "Status": "Processing",
+        "OrderDate": "2025-01-17",
+        "Product": "NovaTech Starter — Monthly",
+        "EstimatedDelivery": "2025-01-17",
+        "TrackingNumber": "N/A (digital)"
+      }
+    },
+    {
+      "fields": {
+        "OrderID": "ORD-2025-0099",
+        "Status": "Refunded",
+        "OrderDate": "2024-12-30",
+        "Product": "NovaTech Pro — Monthly",
+        "EstimatedDelivery": "—",
+        "TrackingNumber": "—"
+      }
+    },
+    {
+      "fields": {
+        "OrderID": "ORD-2025-0301",
+        "Status": "Awaiting Payment",
+        "OrderDate": "2025-03-01",
+        "Product": "Extra Team Seats x5",
+        "EstimatedDelivery": "On payment",
+        "TrackingNumber": "—"
+      }
+    }
+  ]
+}

@@ -1,0 +1,80 @@
+# CLAUDE.md — Customer Support AI Agent
+
+## Project Identity
+**Name:** Customer Support AI Agent (CSAIA)
+**Stack (as specified):** LangChain + FastAPI + ChromaDB + OpenAI GPT-4o
+**Source of truth:** [Project4_Customer_Support_AI_Agent_Build_Guide.md](Project4_Customer_Support_AI_Agent_Build_Guide.md)
+**Day:** Project 4 of 30-Day AI Automation Battle Plan
+**Portfolio target:** kedrichautomation.vercel.app case study
+
+## What This Is
+A FastAPI service exposing 4 endpoints (`/chat`, `/escalate`, `/ingest`, `/health`) backed by a LangChain tool-calling agent with 5 tools:
+1. `search_faq` — RAG over ChromaDB (semantic search of company docs)
+2. `get_order_status` — Airtable lookup
+3. `create_support_ticket` — HubSpot API
+4. `send_reply_email` — Resend API
+5. `escalate_to_human` — Slack webhook with full context
+
+**The portfolio-critical feature:** the agent escalates with full context when it doesn't know — that's the differentiator vs. a toy chatbot.
+
+## Key Decisions From Source File
+- **Embedding model:** `text-embedding-3-small` (cheaper, better than ada-002)
+- **LLM:** `gpt-4o`, temperature=0
+- **Chunking:** RecursiveCharacterTextSplitter, chunk_size=1000, overlap=200
+- **Retrieval:** top-k=4, relevance threshold 0.4 (below → escalate)
+- **Agent:** `create_tool_calling_agent` + AgentExecutor, max_iterations=6, handle_parsing_errors=True
+- **Auth:** API key via `x-api-key` header on `/chat` and `/ingest`
+- **Vector store persistence:** `./db` (gitignored)
+- **Knowledge base source:** `./knowledge_base/*.md` (5 docs for fake company "NovaTech Solutions")
+- **Dynamic ingestion:** `/ingest` endpoint adds docs without server restart
+- **Lifespan hook:** auto-ingests `./knowledge_base/` on startup if vector store empty
+
+## Free-Tier Constraints (User Rule)
+No credit card. If a service requires billing, swap to a free alternative and document the swap as a project-decision memory.
+
+**Known billing blockers in the source file (decisions deferred until that section):**
+- **OpenAI** — requires billing. Candidate swaps: Groq (free LLM) + HuggingFace local embeddings, or full Ollama local.
+- **Railway** — removed free tier. Candidate swaps: Render free web service, Fly.io, HuggingFace Spaces.
+- **HubSpot, Slack, Resend, Airtable** — usable on free tiers.
+
+## Working Style Rules
+- One section at a time. Never advance until user says `next`.
+- Exact configs, exact field values. No vague instructions.
+- If a value isn't in the source file or context files, **ask before assuming**.
+- User has coding + cybersecurity background — skip basics.
+- Screenshot-first debugging: identify what's wrong, give click-by-click fixes.
+- Real engineering decisions → save as project-decision memory + link from MEMORY.md.
+- After each section: update this status block AND check off in [progress/checklist.md](progress/checklist.md).
+
+## Status Block
+
+**Current section:** Step 1 — Knowledge Base Documents (not started)
+**Last completed:** Scaffolding
+**Blocked on:** None
+**Next action:** User runs `next` → we create the 5 knowledge_base/*.md files
+
+### Section Progress
+- [x] Scaffolding (folders, configs, docs split, memory)
+- [ ] Step 0 — Resolve free-tier swaps (OpenAI, Railway)
+- [ ] Step 1 — Create knowledge base documents
+- [ ] Step 2 — Pydantic models
+- [ ] Step 3 — RAG pipeline + isolation test
+- [ ] Step 4 — Five tools
+- [ ] Step 5 — LangChain agent
+- [ ] Step 6 — FastAPI app
+- [ ] Step 7 — Run locally
+- [ ] Step 8 — Test suite (8 tests)
+- [ ] Step 9 — Deploy
+- [ ] Post-build — test-results, case-study assets, CASE_STUDY_BRIEF
+
+## File Map
+- `app/` — application code
+- `knowledge_base/` — fake NovaTech docs (RAG corpus)
+- `db/` — ChromaDB persistence (gitignored)
+- `tests/` — RAG + agent tests
+- `docs/` — source file split by section
+- `context/` — architecture, credentials template
+- `progress/` — checklist
+- `sample-data/` — test payloads, mock Airtable rows
+- `test-results/` — manual test logs (populated post-build)
+- `case-study-assets/` — screenshots, scrubbed workflow exports
