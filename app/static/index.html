@@ -539,6 +539,88 @@
       padding: 2px 7px;
       letter-spacing: 0.2px;
     }
+
+    /* ── Mobile ────────────────────────────────────────────────────────── */
+    @media (max-width: 600px) {
+      .page {
+        padding: 0;
+        align-items: stretch;
+      }
+
+      .chat-card {
+        max-width: 100%;
+        height: 100dvh;
+        border: none;
+        border-radius: 0;
+      }
+
+      .chat-card::before,
+      .chat-card:hover,
+      .chat-card:hover::before {
+        display: none;
+        box-shadow: none;
+      }
+
+      .header {
+        padding: 0 14px;
+        height: 52px;
+      }
+
+      .header-subtitle {
+        display: none;
+      }
+
+      .header-session {
+        display: none;
+      }
+
+      .messages {
+        padding: 16px 14px;
+      }
+
+      .msg-bubble-row {
+        max-width: 90%;
+      }
+
+      .msg-bubble {
+        font-size: 14px;
+        padding: 10px 13px;
+      }
+
+      .msg-time {
+        padding-left: 32px;
+      }
+
+      .msg-group.user .msg-time {
+        padding-right: 32px;
+      }
+
+      .sources-row {
+        padding-left: 32px;
+      }
+
+      .escalation-banner {
+        margin-left: 32px;
+      }
+
+      .input-bar {
+        padding: 10px 14px;
+        padding-bottom: calc(10px + env(safe-area-inset-bottom));
+      }
+
+      #input-textarea {
+        font-size: 16px; /* prevents iOS zoom on focus */
+      }
+
+      #send-btn {
+        padding: 0 16px;
+        height: 44px;
+      }
+
+      .hint-bar {
+        display: none;
+      }
+    }
   </style>
 </head>
 <body>
