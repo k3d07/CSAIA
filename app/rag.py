@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Optional
 from dotenv import load_dotenv
 
-from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_community.embeddings import FastEmbedEmbeddings
 from langchain_chroma import Chroma
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import TextLoader, PyPDFLoader
@@ -18,13 +18,10 @@ load_dotenv()
 
 CHROMA_PERSIST_DIR = os.getenv("CHROMA_PERSIST_DIR", "./db")
 COLLECTION_NAME = "support_knowledge_base"
-HF_EMBEDDING_MODEL = os.getenv(
-    "HF_EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2"
-)
 
-# Free-tier swap: HuggingFace local embeddings replace OpenAI's text-embedding-3-small.
-# Weights download to disk on first use (~80 MB for MiniLM-L6-v2). 384-dim vectors.
-embeddings = HuggingFaceEmbeddings(model_name=HF_EMBEDDING_MODEL)
+# fastembed uses ONNX runtime (no PyTorch) — fits in Render's 512MB free tier.
+# BAAI/bge-small-en-v1.5: 384-dim, ~130MB model, same quality as MiniLM-L6-v2.
+embeddings = FastEmbedEmbeddings(model_name="BAAI/bge-small-en-v1.5")
 
 
 # ─────────────────────────────────────────────────────────────
