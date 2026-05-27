@@ -11,10 +11,10 @@ __pycache__/
 .env
 .env.*
 !.env.example
-context/credentials.md
 
-# Vector store
+# Vector store + model cache
 db/
+model_cache/
 
 # OS
 .DS_Store
@@ -25,8 +25,15 @@ Thumbs.db
 .vscode/
 *.swp
 
-# Case study WIP scrubs
-case-study-assets/*-unscrubbed*
+# Internal project files (not part of the public source)
+CLAUDE.md
+Project4_Customer_Support_AI_Agent_Build_Guide.md
+docs/
+context/
+progress/
+test-results/
+sample-data/
+case-study-assets/
 
 # Design scratch files
 *.html
