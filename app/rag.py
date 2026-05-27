@@ -3,8 +3,8 @@ from pathlib import Path
 from typing import Optional
 from dotenv import load_dotenv
 
-from langchain_community.embeddings import FastEmbedEmbeddings
 from langchain_chroma import Chroma
+from langchain_core.embeddings import Embeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import TextLoader, PyPDFLoader
 from langchain.schema import Document
@@ -18,10 +18,28 @@ load_dotenv()
 
 CHROMA_PERSIST_DIR = os.getenv("CHROMA_PERSIST_DIR", "./db")
 COLLECTION_NAME = "support_knowledge_base"
+FASTEMBED_CACHE_DIR = os.getenv("FASTEMBED_CACHE_DIR", "./model_cache")
 
-# fastembed uses ONNX runtime (no PyTorch) — fits in Render's 512MB free tier.
-# BAAI/bge-small-en-v1.5: 384-dim, ~130MB model, same quality as MiniLM-L6-v2.
-embeddings = FastEmbedEmbeddings(model_name="BAAI/bge-small-en-v1.5")
+
+class LocalFastEmbeddings(Embeddings):
+    """Direct fastembed wrapper — bypasses langchain_community's broken PrivateAttr init."""
+
+    def __init__(self, model_name: str = "BAAI/bge-small-en-v1.5", cache_dir: str = "./model_cache"):
+        from fastembed import TextEmbedding
+        self._model = TextEmbedding(model_name=model_name, cache_dir=cache_dir)
+        list(self._model.embed(["warmup"]))  # trigger model load now, not on first query
+
+    def embed_documents(self, texts: list[str]) -> list[list[float]]:
+        return [list(e) for e in self._model.embed(texts)]
+
+    def embed_query(self, text: str) -> list[float]:
+        return list(self._model.embed([text]))[0]
+
+
+embeddings = LocalFastEmbeddings(
+    model_name="BAAI/bge-small-en-v1.5",
+    cache_dir=FASTEMBED_CACHE_DIR,
+)
 
 
 # ─────────────────────────────────────────────────────────────
