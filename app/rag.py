@@ -30,10 +30,10 @@ class LocalFastEmbeddings(Embeddings):
         list(self._model.embed(["warmup"]))  # trigger model load now, not on first query
 
     def embed_documents(self, texts: list[str]) -> list[list[float]]:
-        return [list(e) for e in self._model.embed(texts)]
+        return [e.tolist() for e in self._model.embed(texts)]
 
     def embed_query(self, text: str) -> list[float]:
-        return list(self._model.embed([text]))[0]
+        return list(self._model.embed([text]))[0].tolist()
 
 
 embeddings = LocalFastEmbeddings(
