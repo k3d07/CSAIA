@@ -2,9 +2,8 @@ import os
 from dotenv import load_dotenv
 
 from langchain_groq import ChatGroq
-from langchain.agents import create_tool_calling_agent, AgentExecutor
-from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain.schema import HumanMessage, AIMessage
+from langchain.agents import create_react_agent, AgentExecutor
+from langchain.prompts import PromptTemplate
 
 from app.tools.knowledge_base import search_faq
 from app.tools.orders import get_order_status
@@ -28,6 +27,9 @@ TOOLS = [
 
 # ─────────────────────────────────────────────────────────────
 # LLM — Groq (swapped from OpenAI gpt-4o for free-tier compliance)
+# Using ReAct agent to bypass Groq's tool-call API validation entirely.
+# Models like llama-3.3-70b-versatile emit XML-format tool calls which
+# Groq's API rejects. ReAct uses text-based action parsing — no tool API.
 # ─────────────────────────────────────────────────────────────
 
 llm = ChatGroq(
@@ -37,65 +39,56 @@ llm = ChatGroq(
 )
 
 # ─────────────────────────────────────────────────────────────
-# System Prompt
+# ReAct Prompt Template
+# Required variables: {tools}, {tool_names}, {input},
+#                     {agent_scratchpad}, {chat_history}
 # ─────────────────────────────────────────────────────────────
 
-SYSTEM_PROMPT = """You are a professional customer support agent for NovaTech Solutions.
+REACT_TEMPLATE = """You are a professional customer support agent for NovaTech Solutions.
 You are helpful, concise, and accurate.
 
-Your capabilities:
-- search_faq: search the company's knowledge base for policy and product information
-- get_order_status: look up a specific order by ID
-- create_support_ticket: create a ticket in HubSpot for issues needing follow-up
-- send_reply_email: send an email confirmation to the customer
-- escalate_to_human: alert the human support team via Slack when you cannot help
+Guidelines:
+- ALWAYS search the knowledge base first for any product or policy question.
+- Cite your sources: "According to our refund policy..." or "From our product guide..."
+- If knowledge base relevance scores are below 0.4 or results are irrelevant, escalate instead of guessing.
+- When escalating, include what the customer asked, what you searched, and why you couldn't resolve it.
+- Keep responses to 2-4 sentences unless more detail is genuinely needed.
+- Never invent order IDs, ticket numbers, or prices not found in your tools.
+- Tone: professional, empathetic, direct.
 
-How to respond:
+You have access to the following tools:
 
-1. ALWAYS search the knowledge base first for any product or policy question.
-   Do not answer from general knowledge when you have a knowledge base to check.
+{tools}
 
-2. Cite your sources. When you use information from the knowledge base,
-   mention the document name it came from:
-   "According to our refund policy..." or "From our product guide..."
+STRICT FORMAT RULES — follow this EXACTLY every time:
 
-3. Be honest about uncertainty. If the knowledge base returns low relevance
-   scores (below 0.4) or irrelevant content, say so and escalate rather than
-   guessing.
+Question: the input question you must answer
+Thought: think about what to do next
+Action: one of [{tool_names}]
+Action Input: the input string for the tool
+Observation: the result of the tool
+(you may repeat Thought/Action/Action Input/Observation if you need another tool)
+Thought: I now know the final answer
+Final Answer: your complete response to the customer
 
-4. Escalate proactively. It is better to escalate with full context than to
-   give a wrong answer with confidence. When escalating, include:
-   - What the customer asked
-   - What you searched for
-   - Why you couldn't resolve it
-   So the human agent can take over without asking the customer to repeat.
+CRITICAL RULES:
+- After an Observation, if you have enough information, IMMEDIATELY write "Thought: I now know the final answer" then "Final Answer: ..."
+- NEVER write "Action: None" or "Action: N/A" — if you are done with tools, go straight to Final Answer.
+- Action MUST always be one of the exact tool names: {tool_names}
 
-5. Keep responses concise. Most answers should be 2-4 sentences unless
-   the question genuinely requires more detail. Do not pad responses.
+Previous conversation:
+{chat_history}
 
-6. Never make up order IDs, ticket numbers, or specific prices not found
-   in your tools. If you don't know, say so.
+Question: {input}
+Thought:{agent_scratchpad}"""
 
-Tone: Professional, empathetic, direct. Not robotic. If a customer is
-frustrated, acknowledge it briefly before solving their problem."""
-
-
-# ─────────────────────────────────────────────────────────────
-# Prompt Template
-# ─────────────────────────────────────────────────────────────
-
-prompt = ChatPromptTemplate.from_messages([
-    ("system", SYSTEM_PROMPT),
-    MessagesPlaceholder(variable_name="chat_history"),
-    ("human", "{input}"),
-    MessagesPlaceholder(variable_name="agent_scratchpad"),
-])
+prompt = PromptTemplate.from_template(REACT_TEMPLATE)
 
 # ─────────────────────────────────────────────────────────────
 # Agent
 # ─────────────────────────────────────────────────────────────
 
-agent = create_tool_calling_agent(llm=llm, tools=TOOLS, prompt=prompt)
+agent = create_react_agent(llm=llm, tools=TOOLS, prompt=prompt)
 
 agent_executor = AgentExecutor(
     agent=agent,
@@ -111,15 +104,15 @@ agent_executor = AgentExecutor(
 # Run function
 # ─────────────────────────────────────────────────────────────
 
-def convert_history(history: list[dict]) -> list:
-    """Convert API message format to LangChain message objects."""
-    messages = []
+def convert_history(history: list[dict]) -> str:
+    """Convert API message list to a plain-text string for the ReAct prompt."""
+    if not history:
+        return "None"
+    lines = []
     for msg in history:
-        if msg["role"] == "user":
-            messages.append(HumanMessage(content=msg["content"]))
-        elif msg["role"] == "assistant":
-            messages.append(AIMessage(content=msg["content"]))
-    return messages
+        role = "Customer" if msg["role"] == "user" else "Agent"
+        lines.append(f"{role}: {msg['content']}")
+    return "\n".join(lines)
 
 
 async def run_agent(
@@ -147,7 +140,6 @@ async def run_agent(
         tool_name = action.tool
 
         if tool_name == "search_faq" and isinstance(observation, str):
-            # Parse source document names from the observation
             lines = observation.split("\n")
             for line in lines:
                 if line.startswith("[Result") and "Source:" in line:

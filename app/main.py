@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 
 from fastapi import FastAPI, HTTPException, Depends, Header
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 from app.models import (
     ChatRequest, ChatResponse, Source,
@@ -136,10 +138,9 @@ async def ingest(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
+
 @app.get("/")
 async def root():
-    return {
-        "name": "Customer Support AI Agent",
-        "docs": "/docs",
-        "health": "/health",
-    }
+    return FileResponse("app/static/index.html")

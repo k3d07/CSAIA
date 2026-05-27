@@ -27,3 +27,7 @@ Thumbs.db
 
 # Case study WIP scrubs
 case-study-assets/*-unscrubbed*
+
+# Design scratch files
+*.html
+!app/static/*.html

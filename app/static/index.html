@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NovaTech Support</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --accent:           #00aaff;
+      --accent-glow:      rgba(0, 170, 255, 0.22);
+      --accent-subtle:    rgba(0, 170, 255, 0.08);
+      --bg-page:          #0a0a0a;
+      --bg-card:          #111111;
+      --bg-message:       #161616;
+      --bg-elevated:      #1e1e1e;
+      --text-primary:     #f0ede8;
+      --text-secondary:   #888888;
+      --text-tertiary:    #444444;
+      --border-default:   rgba(255, 255, 255, 0.07);
+      --border-hover:     rgba(255, 255, 255, 0.14);
+      --border-accent:    rgba(0, 170, 255, 0.22);
+      --green:            #22c55e;
+      --amber:            #fbbf24;
+      --font-sans:        'Space Grotesk', sans-serif;
+      --font-mono:        'JetBrains Mono', monospace;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg-page);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* ── Drifting dot-grid ─────────────────────────────────────────── */
+    .dot-grid {
+      position: fixed;
+      inset: 0;
+      background-image: radial-gradient(circle, rgba(255,255,255,0.45) 1px, transparent 1px);
+      background-size: 28px 28px;
+      animation: drift 32s linear infinite;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    @keyframes drift {
+      from { background-position: 0px 0px; }
+      to   { background-position: 28px 28px; }
+    }
+
+    /* ── Page layout ───────────────────────────────────────────────── */
+    .page {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    /* ── Chat card ─────────────────────────────────────────────────── */
+    .chat-card {
+      position: relative;
+      width: 100%;
+      max-width: 700px;
+      height: min(calc(100vh - 40px), 820px);
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-card);
+      border: 1px solid var(--border-default);
+      overflow: hidden;
+      transition: border-color 0.35s ease, box-shadow 0.35s ease;
+    }
+
+    /* top accent bar — scales in on hover */
+    .chat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, #00aaff, transparent);
+      transform: scaleX(0);
+      transform-origin: left center;
+      transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+      z-index: 10;
+    }
+
+    .chat-card:hover {
+      border-color: var(--border-accent);
+      box-shadow: 0 0 40px rgba(0, 170, 255, 0.22);
+    }
+
+    .chat-card:hover::before {
+      transform: scaleX(1);
+    }
+
+    /* ── Header ────────────────────────────────────────────────────── */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 20px;
+      height: 56px;
+      background: #111111;
+      border-bottom: 1px solid var(--border-default);
+      flex-shrink: 0;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      background: var(--green);
+      border-radius: 50%;
+      flex-shrink: 0;
+      animation: pulse-green 2.2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-green {
+      0%,  100% { box-shadow: 0 0 0 0   rgba(34, 197, 94, 0.55); }
+      50%        { box-shadow: 0 0 0 5px rgba(34, 197, 94, 0);    }
+    }
+
+    .header-text {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .header-title {
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: -0.2px;
+    }
+
+    .header-subtitle {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-secondary);
+      letter-spacing: 0.2px;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .header-badge {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-secondary);
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-default);
+      padding: 3px 8px;
+      letter-spacing: 0.2px;
+    }
+
+    .header-session {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-tertiary);
+    }
+
+    .session-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--green);
+      opacity: 0.6;
+    }
+
+    /* ── Messages area ─────────────────────────────────────────────── */
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      scroll-behavior: smooth;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.07) transparent;
+    }
+
+    .messages::-webkit-scrollbar       { width: 3px; }
+    .messages::-webkit-scrollbar-track { background: transparent; }
+    .messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.07); }
+
+    /* ── Date / session separator ──────────────────────────────────── */
+    .separator {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .sep-line {
+      flex: 1;
+      height: 1px;
+      background: var(--border-default);
+    }
+
+    .sep-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-tertiary);
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+
+    /* ── Message rows ──────────────────────────────────────────────── */
+    .msg-group {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 20px;
+      animation: msg-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    @keyframes msg-in {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .msg-group.agent { align-items: flex-start; }
+    .msg-group.user  { align-items: flex-end;   }
+
+    .msg-bubble-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 9px;
+      max-width: 82%;
+    }
+
+    .msg-group.user .msg-bubble-row {
+      flex-direction: row-reverse;
+    }
+
+    /* Avatars — square */
+    .avatar {
+      width: 28px;
+      height: 28px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 500;
+      border: 1px solid var(--border-default);
+      letter-spacing: 0.3px;
+    }
+
+    .avatar.nt {
+      background: rgba(0, 170, 255, 0.08);
+      color: var(--accent);
+      border-color: rgba(0, 170, 255, 0.18);
+    }
+
+    .avatar.you {
+      background: var(--bg-elevated);
+      color: var(--text-secondary);
+    }
+
+    /* Bubbles */
+    .msg-bubble {
+      padding: 11px 14px;
+      font-size: 13.5px;
+      line-height: 1.65;
+      word-break: break-word;
+    }
+
+    .msg-group.agent .msg-bubble {
+      background: var(--bg-message);
+      border: 1px solid var(--border-default);
+      color: var(--text-primary);
+    }
+
+    .msg-group.user .msg-bubble {
+      background: var(--accent);
+      color: #0a0a0a;
+      font-weight: 500;
+    }
+
+    /* Timestamp */
+    .msg-time {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-tertiary);
+      margin-top: 5px;
+      padding-left: 37px;
+    }
+
+    .msg-group.user .msg-time {
+      padding-left: 0;
+      padding-right: 37px;
+      text-align: right;
+    }
+
+    /* Source badges row */
+    .sources-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 7px;
+      padding-left: 37px;
+    }
+
+    .source-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-default);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      transition: border-color 0.2s ease;
+      cursor: default;
+    }
+
+    .source-badge:hover {
+      border-color: var(--border-hover);
+    }
+
+    .source-icon {
+      font-size: 10px;
+      opacity: 0.7;
+    }
+
+    /* Escalation banner */
+    .escalation-banner {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-top: 8px;
+      margin-left: 37px;
+      padding: 8px 12px;
+      background: rgba(251, 191, 36, 0.07);
+      border: 1px solid rgba(251, 191, 36, 0.18);
+      border-left: 2px solid var(--amber);
+    }
+
+    .esc-dot {
+      width: 5px;
+      height: 5px;
+      background: var(--amber);
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .esc-text {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--amber);
+      letter-spacing: 0.2px;
+    }
+
+    /* ── Typing indicator ──────────────────────────────────────────── */
+    #typing-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 9px;
+      margin-bottom: 20px;
+      animation: msg-in 0.2s ease forwards;
+    }
+
+    .typing-bubble {
+      background: var(--bg-message);
+      border: 1px solid var(--border-default);
+      padding: 13px 16px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .t-dot {
+      width: 5px;
+      height: 5px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: tdot 1.3s ease-in-out infinite;
+    }
+
+    .t-dot:nth-child(2) { animation-delay: 0.18s; }
+    .t-dot:nth-child(3) { animation-delay: 0.36s; }
+
+    @keyframes tdot {
+      0%, 60%, 100% { transform: translateY(0);    opacity: 0.45; }
+      30%            { transform: translateY(-7px); opacity: 1;    }
+    }
+
+    /* ── Input bar ─────────────────────────────────────────────────── */
+    .input-bar {
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+      padding: 14px 20px;
+      border-top: 1px solid var(--border-default);
+      background: var(--bg-card);
+      flex-shrink: 0;
+    }
+
+    .input-wrap {
+      flex: 1;
+      position: relative;
+    }
+
+    #input-textarea {
+      display: block;
+      width: 100%;
+      min-height: 40px;
+      max-height: 150px;
+      padding: 10px 14px;
+      background: var(--bg-message);
+      border: 1px solid var(--border-default);
+      border-radius: 0;
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      font-size: 13.5px;
+      line-height: 1.55;
+      resize: none;
+      outline: none;
+      overflow-y: auto;
+      transition: border-color 0.2s ease;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.07) transparent;
+    }
+
+    #input-textarea::placeholder {
+      color: var(--text-tertiary);
+    }
+
+    #input-textarea:focus {
+      border-color: rgba(0, 170, 255, 0.28);
+    }
+
+    #send-btn {
+      height: 40px;
+      padding: 0 20px;
+      background: var(--accent);
+      border: none;
+      border-radius: 0;
+      color: #0a0a0a;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: opacity 0.15s ease, background 0.15s ease;
+    }
+
+    #send-btn:hover:not(:disabled) {
+      opacity: 0.88;
+    }
+
+    #send-btn:active:not(:disabled) {
+      opacity: 0.75;
+    }
+
+    #send-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .send-arrow {
+      font-size: 13px;
+      line-height: 1;
+    }
+
+    /* ── Hint bar ──────────────────────────────────────────────────── */
+    .hint-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 20px 8px;
+      background: var(--bg-card);
+      border-top: 1px solid var(--border-default);
+    }
+
+    .hint-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .hint-key {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-tertiary);
+    }
+
+    .hint-key span {
+      color: var(--text-secondary);
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border-default);
+      padding: 1px 5px;
+      margin-right: 4px;
+    }
+
+    .hint-mode {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-tertiary);
+    }
+
+    .demo-badge {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--amber);
+      background: rgba(251, 191, 36, 0.07);
+      border: 1px solid rgba(251, 191, 36, 0.15);
+      padding: 2px 7px;
+      letter-spacing: 0.2px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="dot-grid"></div>
+
+  <div class="page">
+    <div class="chat-card" id="chat-card">
+
+      <!-- ── Header ─────────────────────────────────────────────── -->
+      <div class="header">
+        <div class="status-dot"></div>
+        <div class="header-text">
+          <div class="header-title">NovaTech Support</div>
+          <div class="header-subtitle">rag-agent · llama-3.3-70b · chromadb</div>
+        </div>
+        <div class="header-right">
+          <div class="header-session">
+            <div class="session-dot"></div>
+            <span id="session-id-label"></span>
+          </div>
+          <div class="header-badge">v2.4.1</div>
+        </div>
+      </div>
+
+      <!-- ── Messages ───────────────────────────────────────────── -->
+      <div class="messages" id="messages-area"></div>
+
+      <!-- ── Input ──────────────────────────────────────────────── -->
+      <div class="input-bar">
+        <div class="input-wrap">
+          <textarea
+            id="input-textarea"
+            placeholder="Ask anything — billing, integrations, troubleshooting…"
+            rows="1"
+            autocomplete="off"
+            spellcheck="true"
+          ></textarea>
+        </div>
+        <button id="send-btn" disabled>
+          <span>send</span>
+          <span class="send-arrow">→</span>
+        </button>
+      </div>
+
+      <!-- ── Hint bar ────────────────────────────────────────────── -->
+      <div class="hint-bar">
+        <div class="hint-left">
+          <div class="hint-key"><span>↵</span> send</div>
+          <div class="hint-key"><span>⇧↵</span> new line</div>
+        </div>
+        <div id="mode-badge" class="demo-badge">demo mode</div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    /* ─────────────────────────────────────────────────────────────────────
+       FILL IN YOUR API CREDENTIALS BELOW
+    ───────────────────────────────────────────────────────────────────── */
+    const API_KEY  = "S5mTid34TxkW_6wZw-0JhV6aAXLFXR-5cHLLwZQN9Ag";
+    const BASE_URL = "";
+    /* ─────────────────────────────────────────────────────────────────── */
+
+    // ── DOM refs ──────────────────────────────────────────────────────────
+    const messagesArea = document.getElementById('messages-area');
+    const textarea     = document.getElementById('input-textarea');
+    const sendBtn      = document.getElementById('send-btn');
+    const modeBadge    = document.getElementById('mode-badge');
+
+    // ── State ─────────────────────────────────────────────────────────────
+    let busy    = false;
+    let history = []; // { role: 'user'|'assistant', content: string }
+
+    // ── Session ID ────────────────────────────────────────────────────────
+    (function initSession() {
+      const id = Math.random().toString(36).slice(2, 9).toUpperCase();
+      document.getElementById('session-id-label').textContent = id;
+    })();
+
+    // ── Live API mode badge ───────────────────────────────────────────────
+    function updateModeBadge() {
+      const live = API_KEY !== "PLACEHOLDER";
+      modeBadge.textContent    = live ? "live" : "demo mode";
+      modeBadge.style.color    = live ? "var(--green)" : "var(--amber)";
+      modeBadge.style.background = live
+        ? "rgba(34, 197, 94, 0.07)"
+        : "rgba(251, 191, 36, 0.07)";
+      modeBadge.style.borderColor = live
+        ? "rgba(34, 197, 94, 0.15)"
+        : "rgba(251, 191, 36, 0.15)";
+    }
+    updateModeBadge();
+
+    // ── Utilities ─────────────────────────────────────────────────────────
+    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+    function nowLabel() {
+      return new Date().toLocaleTimeString('en-US', {
+        hour: '2-digit', minute: '2-digit', hour12: false
+      });
+    }
+
+    function scrollBottom() {
+      messagesArea.scrollTop = messagesArea.scrollHeight;
+    }
+
+    // ── Demo response pool ────────────────────────────────────────────────
+    const DEMO_POOL = [
+      {
+        content: "I've checked our documentation and there are a few approaches here. First, confirm you're using the email tied to your account — sometimes users have multiple addresses. If the reset email isn't arriving within 60 seconds, check your spam folder. Some mail servers delay delivery; Outlook and corporate inboxes are particularly aggressive filters.",
+        sources: ["account-recovery.md", "email-deliverability.pdf"],
+        escalated: false,
+      },
+      {
+        content: "That matches a known regression we identified in v2.4.0 affecting OAuth sessions on mobile Safari. A patch shipped in v2.4.1 — make sure you're on the latest build. If the issue persists after updating, clear your browser cache and cookies, then attempt re-authentication.",
+        sources: ["release-notes-v2.4.1.md", "oauth-troubleshooting.pdf", "known-issues.md"],
+        escalated: false,
+      },
+      {
+        content: "Your usage is currently within the Pro tier limits, but you're approaching the API rate ceiling — 87% of your monthly quota as of today. I'm flagging this so you're not caught off-guard. You can upgrade to Enterprise at any point; there's no mid-cycle penalty.",
+        sources: ["billing-tiers.md", "rate-limits.pdf"],
+        escalated: false,
+      },
+      {
+        content: "That configuration isn't something I can safely adjust from here — it touches your SSO provider settings and could impact your entire organization's access. I'm escalating this to our Identity & Access team. They'll reach out within 2 business hours with a secure setup session.",
+        sources: ["sso-setup-guide.md", "enterprise-security.pdf"],
+        escalated: true,
+      },
+      {
+        content: "Our webhooks require a publicly reachable HTTPS endpoint — localhost won't work in production. For local testing, use a tunnel like ngrok and point the webhook at your tunnel URL. Make sure you're validating the `X-NovaTech-Signature` header on each event; unsigned payloads are rejected by default.",
+        sources: ["webhooks-guide.md", "sdk-reference.pdf", "security-headers.md"],
+        escalated: false,
+      },
+      {
+        content: "The data export you're requesting contains PII across multiple tenants, which requires a compliance review before we can release it. I'm routing this to our Data Privacy team — expect a response within 3 business days with the appropriate request form.",
+        sources: ["data-privacy-policy.md", "gdpr-compliance.pdf"],
+        escalated: true,
+      },
+    ];
+
+    let demoIdx = 0;
+
+    function getDemoResponse() {
+      const r = DEMO_POOL[demoIdx % DEMO_POOL.length];
+      demoIdx++;
+      return r;
+    }
+
+    // ── API call ──────────────────────────────────────────────────────────
+    async function callAPI(messages) {
+      const isDemoMode = API_KEY === "PLACEHOLDER";
+
+      if (isDemoMode) {
+        await sleep(900 + Math.random() * 900);
+        return getDemoResponse();
+      }
+
+      // Build conversation_history from messages (exclude last user message)
+      const history = messages.slice(0, -1).map(m => ({
+        role: m.role === "user" ? "user" : "assistant",
+        content: m.content,
+      }));
+      const lastMessage = messages[messages.length - 1].content;
+
+      const res = await fetch(`${BASE_URL}/chat`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": API_KEY,
+        },
+        body: JSON.stringify({
+          message: lastMessage,
+          conversation_history: history,
+          user_email: "ui-user@novatech.io",
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ detail: `HTTP ${res.status}` }));
+        throw new Error(err.detail || `HTTP ${res.status}`);
+      }
+
+      const data = await res.json();
+      return {
+        content:   data.answer,
+        sources:   (data.sources || []).map(s => s.document || s),
+        escalated: data.escalated || false,
+      };
+    }
+
+    // ── Render helpers ────────────────────────────────────────────────────
+    function makeSeparator(text) {
+      const el = document.createElement('div');
+      el.className = 'separator';
+      el.innerHTML = `
+        <div class="sep-line"></div>
+        <div class="sep-label">${text}</div>
+        <div class="sep-line"></div>
+      `;
+      return el;
+    }
+
+    function makeAgentGroup({ content, sources = [], escalated = false }) {
+      const group = document.createElement('div');
+      group.className = 'msg-group agent';
+
+      // Bubble row
+      const bubbleRow = document.createElement('div');
+      bubbleRow.className = 'msg-bubble-row';
+
+      const avatar = document.createElement('div');
+      avatar.className = 'avatar nt';
+      avatar.textContent = 'NT';
+
+      const bubble = document.createElement('div');
+      bubble.className = 'msg-bubble';
+      bubble.textContent = content;
+
+      bubbleRow.appendChild(avatar);
+      bubbleRow.appendChild(bubble);
+      group.appendChild(bubbleRow);
+
+      // Timestamp
+      const time = document.createElement('div');
+      time.className = 'msg-time';
+      time.textContent = nowLabel();
+      group.appendChild(time);
+
+      // Source badges
+      if (sources.length > 0) {
+        const row = document.createElement('div');
+        row.className = 'sources-row';
+        sources.forEach(src => {
+          const badge = document.createElement('div');
+          badge.className = 'source-badge';
+          badge.innerHTML = `<span class="source-icon">📄</span>${src}`;
+          row.appendChild(badge);
+        });
+        group.appendChild(row);
+      }
+
+      // Escalation banner
+      if (escalated) {
+        const banner = document.createElement('div');
+        banner.className = 'escalation-banner';
+        banner.innerHTML = `
+          <div class="esc-dot"></div>
+          <div class="esc-text">escalated → human agent assigned · ETA 2h</div>
+        `;
+        group.appendChild(banner);
+      }
+
+      return group;
+    }
+
+    function makeUserGroup(content) {
+      const group = document.createElement('div');
+      group.className = 'msg-group user';
+
+      const bubbleRow = document.createElement('div');
+      bubbleRow.className = 'msg-bubble-row';
+
+      const avatar = document.createElement('div');
+      avatar.className = 'avatar you';
+      avatar.textContent = 'You';
+
+      const bubble = document.createElement('div');
+      bubble.className = 'msg-bubble';
+      bubble.textContent = content;
+
+      bubbleRow.appendChild(bubble);
+      bubbleRow.appendChild(avatar);
+      group.appendChild(bubbleRow);
+
+      const time = document.createElement('div');
+      time.className = 'msg-time';
+      time.textContent = nowLabel();
+      group.appendChild(time);
+
+      return group;
+    }
+
+    function showTyping() {
+      const row = document.createElement('div');
+      row.id = 'typing-row';
+
+      const avatar = document.createElement('div');
+      avatar.className = 'avatar nt';
+      avatar.textContent = 'NT';
+
+      const bubble = document.createElement('div');
+      bubble.className = 'typing-bubble';
+      bubble.innerHTML = `
+        <div class="t-dot"></div>
+        <div class="t-dot"></div>
+        <div class="t-dot"></div>
+      `;
+
+      row.appendChild(avatar);
+      row.appendChild(bubble);
+      messagesArea.appendChild(row);
+      scrollBottom();
+    }
+
+    function hideTyping() {
+      const row = document.getElementById('typing-row');
+      if (row) row.remove();
+    }
+
+    // ── Send flow ─────────────────────────────────────────────────────────
+    async function send() {
+      const text = textarea.value.trim();
+      if (!text || busy) return;
+
+      // Lock
+      busy = true;
+      sendBtn.disabled = true;
+      textarea.value  = '';
+      textarea.style.height = 'auto';
+
+      // Render user message
+      messagesArea.appendChild(makeUserGroup(text));
+      scrollBottom();
+
+      // Append to history
+      history.push({ role: 'user', content: text });
+
+      // Typing indicator
+      showTyping();
+
+      try {
+        const resp = await callAPI(history);
+        hideTyping();
+
+        history.push({ role: 'assistant', content: resp.content });
+        const group = makeAgentGroup(resp);
+        messagesArea.appendChild(group);
+        scrollBottom();
+      } catch (err) {
+        hideTyping();
+        const errGroup = makeAgentGroup({
+          content: `Something went wrong: ${err.message}`,
+          sources: [],
+          escalated: false,
+        });
+        messagesArea.appendChild(errGroup);
+        scrollBottom();
+      } finally {
+        busy = false;
+        sendBtn.disabled = textarea.value.trim() === '';
+        textarea.focus();
+      }
+    }
+
+    // ── Textarea behavior ─────────────────────────────────────────────────
+    textarea.addEventListener('input', () => {
+      // Auto-resize
+      textarea.style.height = 'auto';
+      textarea.style.height = Math.min(textarea.scrollHeight, 150) + 'px';
+      // Toggle send button
+      sendBtn.disabled = textarea.value.trim() === '' || busy;
+    });
+
+    textarea.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        if (!sendBtn.disabled) send();
+      }
+    });
+
+    sendBtn.addEventListener('click', () => { if (!sendBtn.disabled) send(); });
+
+    // ── Initial state ─────────────────────────────────────────────────────
+    (function init() {
+      const today = new Date().toLocaleDateString('en-US', {
+        weekday: 'long', month: 'short', day: 'numeric'
+      });
+      messagesArea.appendChild(makeSeparator(`${today} · session started`));
+
+      const greeting = {
+        content: "Hi there — I'm NovaTech's support agent. I have access to the full documentation, knowledge base, and your account context. What can I help you with?",
+        sources: ["getting-started.md", "faq.pdf"],
+        escalated: false,
+      };
+
+      history.push({ role: 'assistant', content: greeting.content });
+      messagesArea.appendChild(makeAgentGroup(greeting));
+      scrollBottom();
+
+      textarea.focus();
+    })();
+  </script>
+</body>
+</html>

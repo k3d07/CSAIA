@@ -22,7 +22,7 @@ A FastAPI service exposing 4 endpoints (`/chat`, `/escalate`, `/ingest`, `/healt
 - **LLM:** ~~`gpt-4o`~~ → **`llama-3.3-70b-versatile` via Groq**, temperature=0 (free-tier swap)
 - **Chunking:** RecursiveCharacterTextSplitter, chunk_size=1000, overlap=200
 - **Retrieval:** top-k=4, relevance threshold 0.4 (below → escalate)
-- **Agent:** `create_tool_calling_agent` + AgentExecutor, max_iterations=6, handle_parsing_errors=True
+- **Agent:** ~~`create_tool_calling_agent`~~ → **`create_react_agent`** (ReAct text-parsing bypasses Groq tool-call API validation; all Groq models emit XML-format tool calls which Groq's own API rejects) + AgentExecutor, max_iterations=6, handle_parsing_errors=True
 - **Auth:** API key via `x-api-key` header on `/chat` and `/ingest`
 - **Vector store persistence:** `./db` (gitignored)
 - **Knowledge base source:** `./knowledge_base/*.md` (5 docs for fake company "NovaTech Solutions")
@@ -48,10 +48,9 @@ No credit card. If a service requires billing, swap to a free alternative and do
 
 ## Status Block
 
-**Current section:** Step 7 — Run Locally (not started)
-**Last completed:** Step 6 — FastAPI app (`app/main.py`) with 4 routes, auth, lifespan
-**Blocked on:** Need `.env` filled in (at minimum `GROQ_API_KEY` + `API_KEY`) before first run
-**Next action:** Create `.env` from `.env.example`, fill in keys, run `uvicorn app.main:app --reload --port 8000`
+**Current section:** Step 9 — Deploy to Render (not started)
+**Last completed:** Step 8 — All 8 tests PASS, logged in test-results/test-results.md
+**Next action:** Push to GitHub, connect Render free web service, set env vars, deploy
 
 ### Section Progress
 - [x] Scaffolding (folders, configs, docs split, memory)
@@ -69,8 +68,8 @@ No credit card. If a service requires billing, swap to a free alternative and do
 - [ ] Step 4 — Five tools
 - [ ] Step 5 — LangChain agent
 - [ ] Step 6 — FastAPI app
-- [ ] Step 7 — Run locally
-- [ ] Step 8 — Test suite (8 tests)
+- [x] Step 7 — Run locally (200 from /chat, ReAct agent, sources extracted)
+- [x] Step 8 — Test suite (8/8 PASS, escalation tool bug fixed, dynamic ingest confirmed)
 - [ ] Step 9 — Deploy
 - [ ] Post-build — test-results, case-study assets, CASE_STUDY_BRIEF
 

@@ -9,7 +9,7 @@ SLACK_WEBHOOK_URL = os.getenv("SLACK_WEBHOOK_URL")
 
 
 @tool
-def escalate_to_human(reason: str, conversation_context: str) -> str:
+def escalate_to_human(reason: str, conversation_context: str = "") -> str:
     """
     Escalate a support conversation to a human agent via Slack alert.
 
