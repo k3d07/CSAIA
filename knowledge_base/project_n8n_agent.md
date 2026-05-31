@@ -1,0 +1,1 @@
+n8n Multi-Tool AI Agent: A single webhook that accepts any sales-ops request in plain English. The LLM (Groq Llama 3.3 70B) picks which of 4 tools to call — HubSpot contact lookup, Google Calendar scheduling, Serper web search, Slack notification — in what order. No if/then logic. Built on n8n + Railway.

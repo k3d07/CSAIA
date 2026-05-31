@@ -1,0 +1,1 @@
+Pricing and engagement model: Pricing is project-based and depends on scope. Discovery call is free. Typical engagement: 1-2 weeks for a focused automation, 4-8 weeks for a full SaaS-style build. To discuss scope and pricing, book a call at https://cal.com/kim-edrich-custodio-uzhpt7 or email kedrich.custodio@gmail.com.

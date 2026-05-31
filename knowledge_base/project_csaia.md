@@ -1,0 +1,1 @@
+Customer Support AI Agent (CSAIA): A LangChain ReAct agent with RAG over a ChromaDB knowledge base, served by FastAPI. Answers from policy docs, looks up orders in Airtable, creates HubSpot tickets, escalates to Slack with full conversation context. Powers the chat widget on kedrichai.xyz that visitors are using right now. Source code: https://github.com/k3d07/CSAIA

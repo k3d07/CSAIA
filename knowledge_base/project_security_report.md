@@ -1,0 +1,1 @@
+Security Report Automator: Submit a domain, receive a pentest-style PDF report in your inbox in under 90 seconds. Six security APIs run in parallel (crt.sh, HackerTarget, Shodan, SSL Labs, NVD, HIBP), Groq Llama 3.3 70B writes the report, WeasyPrint renders to PDF, Resend delivers it. Passive recon only — legal by design. Live demo: https://app.kedrichai.xyz/app/

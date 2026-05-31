@@ -1,0 +1,1 @@
+Kedrich (Kim Edrich B. Custodio) is an AI Automation Specialist based in Naga City, Philippines. He designs and builds end-to-end automation systems: AI agents that think, pipelines that act, backends that scale. Open to freelance projects, contracts, and collaborations.

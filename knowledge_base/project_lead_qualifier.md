@@ -1,0 +1,1 @@
+AI Lead Qualifier: Inbound lead form → Make.com → Groq AI classifies the lead as Hot/Warm/Cold plus 7 other fields → routes to HubSpot CRM pipeline + Slack alert + personalized Gmail outreach. All under 30 seconds per lead.
