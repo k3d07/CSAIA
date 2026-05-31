@@ -1,4 +1,5 @@
 import os
+import re
 import uuid
 from datetime import datetime
 from contextlib import asynccontextmanager
@@ -105,10 +106,14 @@ async def chat(
             conversation_history=[m.model_dump() for m in request.conversation_history],
         )
 
+        # Strip any leaked internal filenames (belt-and-suspenders alongside prompt rule)
+        answer = re.sub(r'\b\w+\.(md|txt|json|pdf)\b', '', result["answer"])
+        answer = re.sub(r' {2,}', ' ', answer).strip()
+
         sources = [Source(**s) for s in result["sources"]]
 
         return ChatResponse(
-            answer=result["answer"],
+            answer=answer,
             sources=sources,
             escalated=result["escalated"],
             session_id=request.session_id or str(uuid.uuid4()),
