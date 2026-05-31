@@ -6,9 +6,6 @@ from langchain.agents import create_react_agent, AgentExecutor
 from langchain.prompts import PromptTemplate
 
 from app.tools.knowledge_base import search_faq
-from app.tools.orders import get_order_status
-from app.tools.hubspot import create_support_ticket
-from app.tools.email import send_reply_email
 from app.tools.escalation import escalate_to_human
 
 load_dotenv()
@@ -19,9 +16,6 @@ load_dotenv()
 
 TOOLS = [
     search_faq,
-    get_order_status,
-    create_support_ticket,
-    send_reply_email,
     escalate_to_human,
 ]
 

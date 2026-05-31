@@ -1,11 +1,13 @@
 import os
 import re
 import uuid
+from collections import defaultdict
 from datetime import datetime
 from contextlib import asynccontextmanager
+from time import time
 from dotenv import load_dotenv
 
-from fastapi import FastAPI, HTTPException, Depends, Header
+from fastapi import FastAPI, HTTPException, Depends, Header, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -21,6 +23,21 @@ from app.rag import ingest_text, ingest_directory, get_document_count
 load_dotenv()
 
 API_KEY = os.getenv("API_KEY", "dev-key")
+
+# ─────────────────────────────────────────────────────────────
+# Rate limiting — 20 requests per IP per 60 seconds
+# ─────────────────────────────────────────────────────────────
+
+_rate_store: dict[str, list[float]] = defaultdict(list)
+RATE_LIMIT  = 20
+RATE_WINDOW = 60
+
+def check_rate_limit(ip: str) -> None:
+    now = time()
+    _rate_store[ip] = [t for t in _rate_store[ip] if now - t < RATE_WINDOW]
+    if len(_rate_store[ip]) >= RATE_LIMIT:
+        raise HTTPException(status_code=429, detail="Too many requests. Slow down.")
+    _rate_store[ip].append(now)
 
 
 # ─────────────────────────────────────────────────────────────
@@ -94,12 +111,15 @@ async def health():
 @app.post("/chat", response_model=ChatResponse)
 async def chat(
     request: ChatRequest,
+    req: Request,
     _: str = Depends(verify_api_key),
 ):
     """
     Main endpoint. Send a customer support question, receive an answer
     with cited sources. Escalation happens automatically if needed.
     """
+    check_rate_limit(req.client.host)
+
     try:
         result = await run_agent(
             message=request.message,
