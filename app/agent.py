@@ -135,6 +135,51 @@ def convert_history(history: list[dict]) -> str:
     return "\n".join(lines)
 
 
+async def stream_agent(
+    message: str,
+    conversation_history: list[dict] = None,
+):
+    """
+    Stream the final answer tokens only.
+    Buffers all on_chat_model_stream tokens until "Final Answer:" appears,
+    then yields everything after it — filtering out reasoning/tool-call text.
+    """
+    history = conversation_history or []
+    chat_history = convert_history(history)
+
+    buffer = ""
+    streaming = False
+
+    try:
+        async for event in agent_executor.astream_events(
+            {"input": message, "chat_history": chat_history},
+            version="v2",
+        ):
+            if event["event"] != "on_chat_model_stream":
+                continue
+
+            chunk = event["data"].get("chunk")
+            if chunk is None:
+                continue
+
+            content = chunk.content if hasattr(chunk, "content") else ""
+            if not content:
+                continue
+
+            if not streaming:
+                buffer += content
+                if "Final Answer:" in buffer:
+                    streaming = True
+                    after = buffer.split("Final Answer:", 1)[1].lstrip("\n ")
+                    if after:
+                        yield after
+            else:
+                yield content
+
+    except Exception:
+        return
+
+
 async def run_agent(
     message: str,
     conversation_history: list[dict] = None,

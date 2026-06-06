@@ -1,6 +1,4 @@
 import os
-import re
-import uuid
 from collections import defaultdict
 from datetime import datetime
 from contextlib import asynccontextmanager
@@ -10,14 +8,14 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Depends, Header, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 
 from app.models import (
-    ChatRequest, ChatResponse, Source,
+    ChatRequest,
     IngestRequest, IngestResponse,
     HealthResponse,
 )
-from app.agent import run_agent
+from app.agent import stream_agent
 from app.rag import ingest_text, ingest_directory, get_document_count
 
 load_dotenv()
@@ -108,42 +106,33 @@ async def health():
     )
 
 
-@app.post("/chat", response_model=ChatResponse)
+@app.post("/chat")
 async def chat(
     request: ChatRequest,
     req: Request,
     _: str = Depends(verify_api_key),
 ):
     """
-    Main endpoint. Send a customer support question, receive an answer
-    with cited sources. Escalation happens automatically if needed.
+    Main endpoint. Streams the agent's final answer as plain text tokens.
+    Intermediate reasoning and tool-call steps are filtered out server-side.
     """
     check_rate_limit(req.client.host)
 
-    try:
-        result = await run_agent(
-            message=request.message,
-            conversation_history=[m.model_dump() for m in request.conversation_history],
-        )
+    async def generate():
+        try:
+            async for chunk in stream_agent(
+                message=request.message,
+                conversation_history=[m.model_dump() for m in request.conversation_history],
+            ):
+                yield chunk
+        except Exception as e:
+            yield f"\n\n[Error: {str(e)}]"
 
-        # Strip any leaked internal filenames (belt-and-suspenders alongside prompt rule)
-        answer = re.sub(r'\b\w+\.(md|txt|json|pdf)\b', '', result["answer"])
-        answer = re.sub(r' {2,}', ' ', answer).strip()
-
-        sources = [Source(**s) for s in result["sources"]]
-
-        return ChatResponse(
-            answer=answer,
-            sources=sources,
-            escalated=result["escalated"],
-            session_id=request.session_id or str(uuid.uuid4()),
-        )
-
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Agent error: {str(e)}"
-        )
+    return StreamingResponse(
+        generate(),
+        media_type="text/plain",
+        headers={"X-Accel-Buffering": "no"},
+    )
 
 
 @app.post("/ingest", response_model=IngestResponse)
